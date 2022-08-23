@@ -1,6 +1,6 @@
-/*! 
+/*!
  * jQuery Bootgrid v1.4.0 - 12/31/2021
- * Copyright © 2014-2015 Rafael J. Staib; Copyright © 2018-2021 Deciso B.V. (http://www.jquery-bootgrid.com)
+ * Copyright © 2014-2015 Rafael J. Staib; Copyright © 2018-2022 Deciso B.V. (http://www.jquery-bootgrid.com)
  * Licensed under the MIT license. See LICENSE.txt for more details.
  */
 ;(function ($, window, undefined)
@@ -78,7 +78,7 @@ function init()
 
     loadColumns.call(this); // Loads columns from HTML thead tag
     this.selection = this.options.selection && this.identifier != null;
-    this.rowCount = localStorage.getItem('rowCount[' + this.uid + ']') || this.rowCount;
+    this.rowCount = parseInt(localStorage.getItem('rowCount[' + this.uid + ']')) || this.rowCount;
     loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
     prepareTable.call(this);
     renderTableHeader.call(this);
@@ -361,6 +361,25 @@ function renderActions()
                             loadData.call(that);
                         });
                 actions.append(refresh);
+            }
+
+            if (this.options.resetButton)
+            {
+                var resetIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconReset })),
+                    reset = $(tpl.actionButton.resolve(getParams.call(this,
+                        { content: resetIcon, text: this.options.labels.reset })))
+                        .on("click" + namespace, function (e)
+                        {
+                            e.stopPropagation();
+                            for (var i = 0; i < that.columns.length; i++)
+                            {
+                                localStorage.removeItem('sortColumns[' + that.uid + '][' + that.columns[i].id + ']');
+                                localStorage.removeItem('visibleColumns[' + that.uid + '][' + that.columns[i].id + ']');
+                            }
+                            localStorage.removeItem('rowCount[' + that.uid + ']');
+                            location.reload();
+                        });
+                actions.append(reset);
             }
 
             // Row count selection
@@ -1305,6 +1324,7 @@ Grid.defaults = {
         iconRefresh: "glyphicon-refresh",
         iconSearch: "glyphicon-search",
         iconUp: "glyphicon-chevron-up",
+        iconReset: "glyphicon-flash",
         infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
         left: "text-left",
         pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
@@ -1365,6 +1385,7 @@ Grid.defaults = {
         loading: "Loading...",
         noResults: "No results found!",
         refresh: "Refresh",
+        reset: "Reset stored settings and refresh page",
         search: "Search"
     },
 
@@ -1898,8 +1919,8 @@ $.fn.extend({
 
     _bgBusyAria: function(busy)
     {
-        return (busy == null || busy) ? 
-            this._bgAria("busy", "true") : 
+        return (busy == null || busy) ?
+            this._bgAria("busy", "true") :
             this._bgAria("busy", "false");
     },
 
@@ -1910,29 +1931,29 @@ $.fn.extend({
 
     _bgEnableAria: function (enable)
     {
-        return (enable == null || enable) ? 
-            this.removeClass("disabled")._bgAria("disabled", "false") : 
+        return (enable == null || enable) ?
+            this.removeClass("disabled")._bgAria("disabled", "false") :
             this.addClass("disabled")._bgAria("disabled", "true");
     },
 
     _bgEnableField: function (enable)
     {
-        return (enable == null || enable) ? 
-            this.removeAttr("disabled") : 
+        return (enable == null || enable) ?
+            this.removeAttr("disabled") :
             this.attr("disabled", "disable");
     },
 
     _bgShowAria: function (show)
     {
-        return (show == null || show) ? 
+        return (show == null || show) ?
             this.show()._bgAria("hidden", "false") :
             this.hide()._bgAria("hidden", "true");
     },
 
     _bgSelectAria: function (select)
     {
-        return (select == null || select) ? 
-            this.addClass("active")._bgAria("selected", "true") : 
+        return (select == null || select) ?
+            this.addClass("active")._bgAria("selected", "true") :
             this.removeClass("active")._bgAria("selected", "false");
     },
 
@@ -2022,8 +2043,8 @@ if (!Array.prototype.page)
     {
         var skip = (page - 1) * size,
             end = skip + size;
-        return (this.length > skip) ? 
-            (this.length > end) ? this.slice(skip, end) : 
+        return (this.length > skip) ?
+            (this.length > end) ? this.slice(skip, end) :
                 this.slice(skip) : [];
     };
 }
